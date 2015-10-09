@@ -25,6 +25,25 @@ class MasterViewController: UITableViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
+        loadData()
+    }
+    
+    func loadData() -> Void {
+        let filePath = NSBundle.mainBundle().pathForResource("data", ofType:"json")
+        let data = NSData(contentsOfFile:filePath!)
+        let parsedObject: AnyObject?
+        do {
+            parsedObject = try NSJSONSerialization.JSONObjectWithData(data!,
+                options: NSJSONReadingOptions.AllowFragments) } catch _ as NSError {
+                    parsedObject = nil }
+        if let topLevelObj = parsedObject as? NSDictionary {
+            if let data = topLevelObj["data"] as? NSArray {
+                objects = data as [AnyObject]
+            }
+        }
+        dispatch_async(dispatch_get_main_queue(), {() -> Void in
+            self.tableView.reloadData()
+        })
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -48,7 +67,7 @@ class MasterViewController: UITableViewController {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
-                let object = objects[indexPath.row] as! NSDate
+                let object = objects[indexPath.row] as! NSArray
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
                 controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
@@ -56,6 +75,8 @@ class MasterViewController: UITableViewController {
             }
         }
     }
+    @IBOutlet weak var NameLabel: UILabel!
+    @IBOutlet weak var EmailLabel: UILabel!
 
     // MARK: - Table View
 
@@ -70,8 +91,9 @@ class MasterViewController: UITableViewController {
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
 
-        let object = objects[indexPath.row] as! NSDate
-        cell.textLabel!.text = object.description
+        let object = objects[indexPath.row] as! NSArray
+        cell.textLabel!.text = object[0] as? String
+        cell.detailTextLabel!.text = object[1] as? String
         return cell
     }
 
@@ -89,6 +111,10 @@ class MasterViewController: UITableViewController {
         }
     }
 
+    @IBAction func refreshPull(sender: UIRefreshControl) {
+        loadData()
+        sender.endRefreshing()
+    }
 
 }
 

@@ -10,8 +10,9 @@ import UIKit
 
 class DetailViewController: UIViewController {
 
-    @IBOutlet weak var detailDescriptionLabel: UILabel!
-
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var emailLabel: UILabel!
+    @IBOutlet weak var phoneLabel: UILabel!
 
     var detailItem: AnyObject? {
         didSet {
@@ -22,9 +23,15 @@ class DetailViewController: UIViewController {
 
     func configureView() {
         // Update the user interface for the detail item.
-        if let detail = self.detailItem {
-            if let label = self.detailDescriptionLabel {
-                label.text = detail.description
+        if let detail = self.detailItem as! NSArray? {
+            if let name = self.nameLabel {
+                if let email = self.emailLabel {
+                    if let phone = self.phoneLabel {
+                        name.text = detail[0] as? String
+                        email.text = detail[1] as? String
+                        phone.text = detail[2] as? String
+                    }
+                }
             }
         }
     }
@@ -40,6 +47,4 @@ class DetailViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-
 }
-
